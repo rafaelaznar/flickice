@@ -1,2 +1,2 @@
 # flickice
-Acceso a la API remota de Flickr
+Acceso remoto a la API de Flickr
