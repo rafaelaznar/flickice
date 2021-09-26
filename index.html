@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <link rel="shortcut icon" href="favicon.ico" />
+        <style>img{ margin:5px; height: 100px; float: left; }</style>
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <title>flickice</title>
+        <style>
+            body {
+                margin:0; 
+                padding:0; 
+                background:#efefef;
+                text-align:center; /* used to center div in IE */
+            }
+            #wrapper {
+                width:900px; 
+                margin:0 auto;
+                background:#fff; 
+                text-align:left; 
+                border:1px solid #ccc;
+                border-top:none; 
+                padding:25px; 
+                border-radius:0 0 5px 5px;
+                -moz-border-radius:0 0 5px 5px;
+                -webkit-border-radius: 0 0 5px 5px; 
+                box-shadow:0 0 5px #ccc;
+                -moz-box-shadow:0 0 5px #ccc;
+                -webkit-box-shadow:0 0 5px #ccc;
+            }           
+            #images {
+                border-top:25px; 
+                padding:25px; 
+            }           
+            .image {
+                margin:2px;         
+                background:gold; 
+                text-align:center; 
+                border:5px solid #c78996;        
+                padding:5px; 
+                border-radius:10px;
+            }
+            input[type=text] {
+                width: 100%;
+                padding: 12px 20px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                font-size: x-large
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="wrapper">
+            <h1>flickice: Flickr image searcher</h1>
+            <div class="form-group">
+                <label>type words:</label>
+                <input type="text" class="form-control" id="tags" />
+            </div>
+        </div>
+        <div id="info"></div>
+        <div id="images"></div>
+        <script type="text/javascript">
+            //https://stackoverflow.com/questions/1909441/how-to-delay-the-keyup-handler-until-the-user-stops-typing
+            function delay(callback, ms) {
+                var timer = 0;
+                return function () {
+                    var context = this, args = arguments;
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        callback.apply(context, args);
+                    }, ms || 0);
+                };
+            }
+            function jsonFlickrFeed(data) {
+                $("#images").empty();
+                $.each(data.items, function (key, value) {
+                    $("<a/>")
+                            //.attr("datos", value.media.m)
+                            .attr("href", value.media.m)
+                            .html(
+                                    $("<img/>")
+                                    .attr("src", value.media.m)
+                                    .attr("class", "image")
+                                    ).appendTo("#images");
+                });
+                //$(".image").mouseover(function (a) {
+                //   $("#info").empty().append('yy'); 
+                //})
+            }
+            $(document).ready(function () {
+                var globalTimeout = null;
+                $("#tags").keyup(delay(function (event) {
+                    if (globalTimeout != null) {
+                        clearTimeout(globalTimeout);
+                    }
+                    globalTimeout = setTimeout(function () {
+                        globalTimeout = null;
+                        $.ajax({
+                            url: "http://api.flickr.com/services/feeds/photos_public.gne?format=json&tags=" + $("#tags").val(),
+                            type: "GET",
+                            dataType: "jsonp",
+                            jsonp: "callback",
+                            error: function (dato) {
+                                if (dato.status != 200) {
+                                    $("#images").append("ERROR en la recepción de datos");
+                                }
+                            }
+                        });
+                    }, 200);
+                    return false;
+                }, 500));
+
+
+            });
+        </script>
+    </body>
+</html>
